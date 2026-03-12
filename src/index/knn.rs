@@ -1,5 +1,3 @@
-use std::vec;
-
 use crate::storage::vector_store::VectorStore;
 use crate::types::vector::Vector;
 use crate::distance::metrics::cosine_similiarity;
@@ -8,12 +6,12 @@ pub fn knn_search<'a>(
     store:&'a VectorStore, 
     query: &Vector, 
     k: usize
-) -> Option<Vec<(&'a String, f32)>> {   
+) -> Option<Vec<(&'a u64, f32)>> {   
     if k == 0 || store.vectors.is_empty() {
         return None;
     }
 
-    let mut results: Vec<(&'a String, f32)> = store.vectors.iter()
+    let mut results: Vec<(&'a u64, f32)> = store.vectors.iter()
         .filter_map(|(id, vector)| {
             cosine_similiarity(&query.values, &vector.values).ok().map(|score| (id, score))
         })
@@ -33,9 +31,9 @@ mod tests {
 
     fn build_store() -> VectorStore {
         let mut store = VectorStore::new(3); 
-        store.insert("vec1".to_string(), Vector { id: 1, values: vec![1.0, 0.0, 0.0] }).unwrap();
-        store.insert("vec2".to_string(), Vector { id: 2, values: vec![0.0, 1.0, 0.0] }).unwrap();
-        store.insert("vec3".to_string(), Vector { id: 3, values: vec![0.0, 0.0, 1.0] }).unwrap();
+        store.insert(Vector { id: 1, values: vec![1.0, 0.0, 0.0] }).unwrap();
+        store.insert(Vector { id: 2, values: vec![0.0, 1.0, 0.0] }).unwrap();
+        store.insert(Vector { id: 3, values: vec![0.0, 0.0, 1.0] }).unwrap();
         store
     }
 
@@ -46,7 +44,7 @@ mod tests {
 
         let neighbors = knn_search(&store, &query, 2).unwrap();
         assert_eq!(neighbors.len(), 2);
-        assert_eq!(neighbors[0].0, &"vec1".to_string()); 
+        assert_eq!(neighbors[0].0, &1); 
     }
 
     #[test]
@@ -82,7 +80,7 @@ mod tests {
         let query = Vector { id: 0, values: vec![1.0, 1.0, 1.0] };
 
         for i in 0..5 {
-            store.insert(format!("v{}", i), Vector { id: i, values: vec![1.0, 1.0, 1.0] }).unwrap();
+            store.insert(Vector { id: i, values: vec![1.0, 1.0, 1.0] }).unwrap();
         }
 
         let neighbors = knn_search(&store, &query, 3).unwrap();
