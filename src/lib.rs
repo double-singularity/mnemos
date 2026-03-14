@@ -12,6 +12,7 @@ pub mod distance {
 
 pub mod index {
     pub mod knn;
+    pub mod hnsw;
 }
 
 // pub mod db; 
